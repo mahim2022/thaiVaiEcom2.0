@@ -70,6 +70,25 @@ Join our [Discord server](https://discord.com/invite/medusajs) to meet other com
 
 ## Issues
 
+### Git push failed with `remote unpack failed: index-pack failed`
+
+Symptoms: `git push origin main` failed with messages like:
+
+```text
+remote: fatal: did not receive expected object <sha>
+error: remote unpack failed: index-pack failed
+```
+
+Cause: the previous Git object/history graph was inconsistent (including a nested repo/submodule-style state for `my-medusa-storefront`), so GitHub rejected the uploaded pack.
+
+What solved it:
+
+1. Backed up old `.git` metadata and reinitialized a clean repo history.
+2. Created a fresh root commit from current project files.
+3. Reconfigured `origin` and pushed clean history to `main`.
+4. Converted `my-medusa-storefront` from gitlink/submodule-style entry to regular tracked files.
+5. Committed and pushed again successfully.
+
 ### Storefront cannot reach Medusa backend in Docker (`ECONNREFUSED`)
 
 Symptoms: storefront returns 500 (for example on `/dk`) and logs show `TypeError: fetch failed` with `ECONNREFUSED` from middleware.

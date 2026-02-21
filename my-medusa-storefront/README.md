@@ -110,6 +110,28 @@ NEXT_PUBLIC_STRIPE_KEY=<your-stripe-public-key>
 
 You'll also need to setup the integrations in your Medusa server. See the [Medusa documentation](https://docs.medusajs.com) for more information on how to configure [Stripe](https://docs.medusajs.com/resources/commerce-modules/payment/payment-provider/stripe#main).
 
+# Troubleshooting
+
+## Git push failed with `remote unpack failed: index-pack failed`
+
+Symptoms:
+
+```text
+remote: fatal: did not receive expected object <sha>
+error: remote unpack failed: index-pack failed
+```
+
+Cause: previous Git history/object metadata was inconsistent (including a nested repo/submodule-style state), so GitHub rejected the uploaded pack.
+
+Resolution that worked:
+
+1. Backup old `.git` metadata.
+2. Re-initialize the repository with a clean history.
+3. Create a fresh root commit from current files.
+4. Re-add `origin` and push `main`.
+5. Convert `my-medusa-storefront` from gitlink/submodule-style tracking to normal tracked files.
+6. Commit and push again.
+
 # Resources
 
 ## Learn more about Medusa

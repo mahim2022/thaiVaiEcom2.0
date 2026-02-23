@@ -133,6 +133,39 @@ Notes:
 - The `docker exec` command will fail after `docker compose down` because the container is stopped. Run it after the container is back up.
 - If `docker exec -it` has TTY issues, rerun without `-it`.
 
+### `medusa_backend` fails with `./start.sh: not found`
+
+Symptoms:
+
+- `medusa_backend` restarts repeatedly.
+- Logs show: `/usr/local/bin/docker-entrypoint.sh: exec: line 11: ./start.sh: not found`
+
+Cause:
+
+- On Windows, the project is bind-mounted into the container (`.:/server`).
+- The mounted `start.sh` from the host can have CRLF line endings, and running it directly as `./start.sh` may fail in Alpine.
+
+What solved it:
+
+1. Force startup through `sh` in `docker-compose.yml` for the `medusa` service:
+
+```yaml
+command: ["sh", "-c", "sed -i 's/\\r$//' /server/start.sh; sh /server/start.sh"]
+```
+
+2. Add LF enforcement for shell scripts using `.gitattributes`:
+
+```gitattributes
+*.sh text eol=lf
+```
+
+3. Rebuild containers:
+
+```sh
+docker compose down
+docker compose up --build
+```
+
 ## Other channels
 
 - [GitHub Issues](https://github.com/medusajs/medusa/issues)

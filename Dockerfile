@@ -14,8 +14,11 @@ RUN yarn install
 # Copy source code
 COPY . .
 
+# Normalize line endings and ensure startup script is executable
+RUN sed -i 's/\r$//' ./start.sh && chmod +x ./start.sh
+
 # Expose the port Medusa runs on
 EXPOSE 9000 5173
 
 # Start with migrations and then the development server
-CMD ["./start.sh"]
+CMD ["sh", "-c", "sed -i 's/\\r$//' /server/start.sh; sh /server/start.sh"]

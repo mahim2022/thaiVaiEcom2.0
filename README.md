@@ -42,6 +42,33 @@ Visit the [Quickstart Guide](https://docs.medusajs.com/learn/installation) to se
 
 Visit the [Docs](https://docs.medusajs.com/learn/installation#get-started) to learn more about our system requirements.
 
+### Local startup procedure used in this project
+
+1. Install dependencies for Medusa backend and storefront:
+
+```sh
+yarn install
+cd my-medusa-storefront
+yarn install
+cd ..
+```
+
+2. Add a placeholder publishable key (`pk_...`) in `my-medusa-storefront/.env`.
+3. Start containers:
+
+```sh
+yarn run docker:up
+```
+
+4. Open Medusa admin, create a new user, and log in.
+5. Copy the real publishable key from Medusa admin and replace the placeholder key in `my-medusa-storefront/.env`.
+6. Restart containers so storefront picks up the updated environment:
+
+```sh
+docker compose down
+docker compose up --build
+```
+
 ## What is Medusa
 
 Medusa is a set of commerce modules and tools that allow you to build rich, reliable, and performant commerce applications without reinventing core commerce logic. The modules can be customized and used to build advanced ecommerce stores, marketplaces, or any product that needs foundational commerce primitives. All modules are open-source and freely available on npm.

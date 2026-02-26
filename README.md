@@ -69,6 +69,12 @@ docker compose down
 docker compose up --build
 ```
 
+7. Access the app through Nginx proxy routing:
+
+- Storefront: `http://localhost:8080`
+- Medusa Admin UI: `http://localhost:8080/app`
+- Store API (example): `http://localhost:8080/store/regions`
+
 ## What is Medusa
 
 Medusa is a set of commerce modules and tools that allow you to build rich, reliable, and performant commerce applications without reinventing core commerce logic. The modules can be customized and used to build advanced ecommerce stores, marketplaces, or any product that needs foundational commerce primitives. All modules are open-source and freely available on npm.
@@ -191,6 +197,69 @@ command: ["sh", "-c", "sed -i 's/\\r$//' /server/start.sh; sh /server/start.sh"]
 ```sh
 docker compose down
 docker compose up --build
+```
+
+### Nginx proxy routing setup
+
+This project includes an `nginx` service in `docker-compose.yml` as a reverse proxy.
+
+Current host/container mapping:
+
+- `8080:80` (host `8080` -> Nginx container `80`)
+
+Current route behavior from `nginx/default.conf`:
+
+- `/` -> storefront (`http://storefront:8000`)
+- `/store/` -> Medusa backend (`http://medusa:9000`)
+- `/admin/` -> Medusa backend admin APIs (`http://medusa:9000`)
+- `/auth/` -> Medusa backend auth routes (`http://medusa:9000`)
+- `/app` and `/app/` -> Medusa Admin UI (`http://medusa:9000/app`)
+
+Verification checklist:
+
+```sh
+docker compose ps
+```
+
+- `http://localhost:8080` should load storefront.
+- `http://localhost:8080/app` should load Admin UI.
+- `http://localhost:8080/store/regions` should return data when sent with `x-publishable-api-key`.
+
+### Port 80 bind error on Windows
+
+Symptoms:
+
+- `Error response from daemon: ports are not available ... bind: ... 0.0.0.0:80`
+
+Cause:
+
+- Port `80` is reserved/in use on Windows (often by `System`/HTTP.sys).
+
+Fix used in this project:
+
+- Expose Nginx on host port `8080` instead of `80`:
+
+```yaml
+nginx:
+  ports:
+    - "8080:80"
+```
+
+### PowerShell `curl` header syntax on Windows
+
+On PowerShell, `curl` maps to `Invoke-WebRequest`, so Linux-style `-H` usage may fail.
+
+Use either:
+
+```powershell
+$headers = @{"x-publishable-api-key"="pk_..."}
+Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:8080/store/regions" -Headers $headers
+```
+
+Or use the real curl binary:
+
+```powershell
+curl.exe -i -H "x-publishable-api-key: pk_..." http://localhost:8080/store/regions
 ```
 
 ## Other channels
